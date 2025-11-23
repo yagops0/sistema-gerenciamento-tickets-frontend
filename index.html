@@ -4,22 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
-    <title>Document</title>
+    <title>TICKETS</title>
 </head>
 <body>
-    <div class="quadro-principal">
-        <form action="areaAuxiliar.html"  method="get" class="form-login" id="form1">
-            <h3>LOGIN</h3>
-            <label for="Matrícula">Matrícula</label>
-            <br>
-            <input class="inputs" type="text" placeholder="Matrícula" name="text-matricula" id="text-matricula">
-            <br>
-            <label for="senha">Senha</label>
-            <br>
-            <input class="inputs" type="password" placeholder="Senha" name="senha" id="senha">
-            <br>
-        </>
-        <button value="submit" class="botao-login">ENTRAR</button>
+    <nav class="navbar">
+        <ul>
+            <li><a href="">GERENCIAMENTO DE TICKETS E SOLUCOES</a></li>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="login.html">LOGIN</a></li>
+        </ul>
+    </nav>
+
+    <div class="quadro-solucoes">
+        <h3>FAQ DE SOLUÇÕES</h3>
+        <div class="caixa-pesquisa">
+            <input type="text" placeholder="Pesquisar soluções por tópicos...">
+            <button type="submit">Pesquisar</button>     
+        </div>
+
+        <div class="lista-solucoes">
+            <ul>
+                <li class="solucao-item"></li>
+                <li class="solucao-item"></li>
+                <li class="solucao-item"></li>
+                <li class="solucao-item"></li>
+                <li class="solucao-item"></li>
+            </ul>
+        </div>
+
     </div>
 </body>
 </html>
