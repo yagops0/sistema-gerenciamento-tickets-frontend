@@ -162,3 +162,65 @@ h2{
         padding-top: 10px;
     }
 }
+
+/*QUADRO ANALISTA*/
+.quadro-tickets-analista{
+    background-color: rgb(253, 253, 253);
+    box-shadow: 0px 0px 10px 1px #f5f5f4e0;
+    border-radius: 5px;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 700px;
+    height: 500px;
+    .lista-tickets-analista{
+        width: 90%;
+        height: 90%;
+        overflow-y: auto;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+    }
+}
+
+/*QUADRO GERENTE DASHBOARD*/
+.quadro-dashboard{
+    background-color: rgb(253, 253, 253);
+    box-shadow: 0px 0px 10px 1px #f5f5f4e0;
+    border-radius: 5px;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 800px;
+    height: 600px;
+    .dashboard{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        width: 90%;
+        height: 90%;
+        overflow-y: auto;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+
+        .lista-analistas-gerente{
+            width: 40%;
+            height: 90%;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+            padding-right: 10px;
+        }
+
+        .lista-tickets-gerente{
+            width: 40%;
+            height: 90%;
+            overflow-y: auto;
+            padding-left: 10px;
+        }
+    }
+}
+
