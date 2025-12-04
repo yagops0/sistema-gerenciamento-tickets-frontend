@@ -1,53 +1,28 @@
 const URL = "http://localhost:8080";
 
-const listaSolucoes = document.querySelector("#lista-solucoes");
+const loginUrl = `${URL}/auth/login`;
+
 
 
 function initializePage(){
     const topicoParam = getTopicoFromUrl();
     const inputTopico = document.querySelector("#pesquisa-topico");
+    
+    if (!inputTopico) {
+        return;
+    }
+    
 
     if(topicoParam){
-
         getSolucaoByTopico(topicoParam.toUpperCase());
 
         if(inputTopico){
             inputTopico.value = topicoParam;
         }
     }else{
-        getAllSolucoes();
+        getSolucaoByTopico(null);
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    const btnPesquisar = document.querySelector("#btn-pesquisar");
-    const pesquisaTopico = document.querySelector("#pesquisa-topico");
-
-    while (listaSolucoes.firstChild) {
-        listaSolucoes.removeChild(listaSolucoes.firstChild);
-    }
-
-    if(btnPesquisar){
-        btnPesquisar.addEventListener("click", (e) => {
-            e.preventDefault();
-
-            const valorInput = pesquisaTopico.value.trim();
-            const topico = valorInput ? valorInput.toUpperCase() : null;
-            
-            if(topico){
-
-                getSolucaoByTopico(topico);
-            }else{
-                history.pushState({path: window.location.pathname}, '',window.location.pathname);
-                getSolucaoByTopico(null);
-            }
-
-        });
-    }
-    
-    
-    initializePage();
-});
 
 
 
@@ -64,6 +39,8 @@ function getTopicoFromUrl(){
 async function getAllSolucoes() {
 
     const response = await fetch(`${URL}/public/solucoes`);
+
+    const listaSolucoes = document.querySelector("#lista-solucoes");
 
     console.log(response);
 
@@ -94,12 +71,13 @@ async function getAllSolucoes() {
 // GET SOLUCOES BY TOPICO      
 
 async function getSolucaoByTopico(topico) {
+    const response = await fetch(`${URL}/public/solucoes/busca?topico=${topico}`);
+    
+    const listaSolucoes = document.querySelector("#lista-solucoes");
 
     while (listaSolucoes.firstChild){
         listaSolucoes.removeChild(listaSolucoes.firstChild)
     }
-
-    const response = await fetch(`${URL}/public/solucoes/busca?topico=${topico}`);
 
     const data = await response.json();
 
@@ -126,13 +104,13 @@ async function getSolucaoByTopico(topico) {
 
     const newQuery = topico ? `?topico=${topico}` : '';
     const newUrl = `${window.location.pathname}${newQuery}`;
-    history.pushState({path: newUrl}, '', newUrl);s
+    history.pushState({path: newUrl}, '', newUrl);
 }
 
 
 //! LÓGICA DE LOGIN E PARTE PRIVADA
 
-const loginUrl = `${URL}/auth/login`;
+
 
 function redirecionarPorRole(role){
     if(role === "ROLE_ANALISTA"){
@@ -140,9 +118,26 @@ function redirecionarPorRole(role){
     }else if(role === "ROLE_GERENTE"){
         window.location.href = "/gerente.html";
     }else{
+        console.log(role);
         alert("não foi possível localizar usuário. Redirecionando para Home.");
         window.location.href = "/index.html";
     }
+}
+
+function getRoleFromToken(token){
+    if(!token) return null;
+
+    const base64Url = token.split('.')[1];
+
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const payload = JSON.parse(jsonPayload);
+
+    return payload.role;
+    
 }
 
 async function login(matricula, senha){
@@ -157,38 +152,27 @@ async function login(matricula, senha){
     if (response.ok){
         const data = await response.json();
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
+        const token = data.token;
+        const role = getRoleFromToken(token);
 
-        redirecionarPorRole(data.role);
+        if(!role){
+            alert("Não foi possível identificar o papel do usuário.");
+        }
+
+
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+
+        console.log(role);
+
+        redirecionarPorRole(role);
     } else{
         alert("Falha no login. Verifique seus dados.");
     }
 }
 
 //! LÓGICA BOTÃO DE LOGIN
-
-const btnLogin = document.querySelector("#botao-login");
-const inputMatricula = document.querySelector("#input-matricula");
-const inputSenha = document.querySelector("#input-senha");
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    if(btnLogin && inputMatricula && inputSenha){
-        btnLogin.addEventListener("click", (e) => {
-            e.preventDefault();
-
-            const matricula = inputMatricula.value.trim();
-            const senha = inputSenha.value;
-
-            if(matricula && senha){
-                login(matricula, senha);
-            }else{
-                alert("Por favor, preencha todos os campos de login.");
-            }
-        });
-    }
-});
 
 function getAuthHeader(){
     const token = localStorage.getItem("token");
@@ -214,12 +198,12 @@ async function buscarTicketsAnalista() {
     const headers = getAuthHeader();
     if(!headers) return;
 
-    const repsonse = await fetch(`${URL}/analista/tickets`, {
+    const response = await fetch(`${URL}/analista/tickets`, {
         method: "GET",
         headers: headers
     });
 
-    if(response.status === 403 || repsonse.status === 401){
+    if(response.status === 403 || response.status === 401){
         alert("Sua sessão expirou ou acesso negado.");
         window.location.href = "/login.html";
         return;
@@ -230,14 +214,14 @@ async function buscarTicketsAnalista() {
     data.map((ticket) => {
         const li = document.createElement("li");
         const descricao = document.createElement("p");
-        const status = document.createElement("span");
+        const statusTicket = document.createElement("span");
 
 
         descricao.textContent = ticket.descricao;
-        status.textContent = ticket.status;
+        statusTicket.textContent = ticket.statusTicket;
 
         li.appendChild(descricao);
-        li.appendChild(status);
+        li.appendChild(statusTicket);
 
         listaTicketsAnalista.appendChild(li);
     })
@@ -249,12 +233,15 @@ async function buscarTicketsAnalista() {
 
 //? FUNÇÃO DO GERENTE
 
-const listaTicketsGerente = document.querySelector("#lista-tickets-gerente");
-const listaAnalistasGerente = document.querySelector("#lista-analistas-gerente");
 
 async function dashboardGerente(){
+
+    
     const headers = getAuthHeader();
     if(!headers) return;
+
+    const listaTicketsGerente = document.querySelector("#lista-tickets-gerente");
+    const listaAnalistasGerente = document.querySelector("#lista-analistas-gerente");
 
     const promiseTickets = fetch(`${URL}/gerente/dashboard/tickets`, {headers});
     const promiseAnalistas = fetch(`${URL}/gerente/dashboard/analistas`, {headers});
@@ -272,7 +259,7 @@ async function dashboardGerente(){
 
             users.textContent = ticket.users;
             descricao.textContent = ticket.descricao;
-            status.textContent = ticket.status;
+            status.textContent = ticket.statusTicket;
 
             li.appendChild(users);
             li.appendChild(descricao);
@@ -302,3 +289,56 @@ async function dashboardGerente(){
     
 
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const btnPesquisar = document.querySelector("#btn-pesquisar");
+    const pesquisaTopico = document.querySelector("#pesquisa-topico");
+    
+
+    if(btnPesquisar && pesquisaTopico){    
+        btnPesquisar.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            const valorInput = pesquisaTopico.value.trim();
+            const topico = valorInput ? valorInput.toUpperCase() : null;
+            
+            if(topico){
+                getSolucaoByTopico(topico);
+            }else{
+                history.pushState({path: window.location.pathname}, '', window.location.pathname);
+                getSolucaoByTopico(null);
+            }
+        });
+    }
+    
+    //! LÓGICA BOTÃO DE LOGIN
+    const btnLogin = document.querySelector("#botao-login");
+    const inputMatricula = document.querySelector("#input-matricula");
+    const inputSenha = document.querySelector("#input-senha");
+
+    if(btnLogin && inputMatricula && inputSenha){
+        btnLogin.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            const matricula = inputMatricula.value.trim();
+            const senha = inputSenha.value;
+
+            if(matricula && senha){
+                login(matricula, senha);
+            }else{
+                alert("Por favor, preencha todos os campos de login.");
+            }
+        });
+    }
+
+    initializePage();
+    
+    // RESTRIÇÃO DAS PÁGINAS
+    const path = window.location.pathname;
+
+    if(path.includes("/analista.html")){
+        buscarTicketsAnalista();
+    }else if(path.includes("/gerente.html")){
+        dashboardGerente();
+    }
+});
