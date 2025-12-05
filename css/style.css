@@ -195,7 +195,7 @@ h2{
     justify-content: center;
     align-items: center;
     width: 800px;
-    height: 600px;
+    height: 400px;
     .dashboard{
         display: flex;
         flex-direction: row;

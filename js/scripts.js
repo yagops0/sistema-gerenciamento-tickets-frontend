@@ -20,7 +20,7 @@ function initializePage(){
             inputTopico.value = topicoParam;
         }
     }else{
-        getSolucaoByTopico(null);
+        getAllSolucoes();
     }
 }
 
@@ -290,10 +290,51 @@ async function dashboardGerente(){
 
 }
 
+function checarAcessoPagina(){
+    const role = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
+    const path = window.location.pathname;
+
+    const paginaAnalista = path.includes("analista.html");
+    const paginaGerente = path.includes("gerente.html");
+    const paginasRestritas = paginaAnalista || paginaGerente;
+
+    if (!token && paginasRestritas) {
+        alert("Acesso negado. Por favor, faça login.");
+        window.location.href = '/login.html';
+        return false; 
+    }
+    
+
+    if (token) {
+
+        if (paginaGerente && role !== 'ROLE_GERENTE') {
+            alert("Acesso negado. Você será redirecionado para sua área.");
+            console.log(role);
+            window.location.href = '/analista.html';
+            return false;
+        }
+        else if (paginaAnalista && role !== 'ROLE_ANALISTA') {
+            alert("Acesso negado. Você será redirecionado para sua área.");
+            console.log(role);
+            window.location.href = '/gerente.html';
+            return false;
+        }
+    }
+
+    return true;
+    
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const btnPesquisar = document.querySelector("#btn-pesquisar");
     const pesquisaTopico = document.querySelector("#pesquisa-topico");
     
+    const autorizcao = checarAcessoPagina();
+
+    if(!autorizcao){
+        return;
+    }
 
     if(btnPesquisar && pesquisaTopico){    
         btnPesquisar.addEventListener("click", (e) => {
@@ -332,8 +373,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initializePage();
-    
+
     // RESTRIÇÃO DAS PÁGINAS
+
     const path = window.location.pathname;
 
     if(path.includes("/analista.html")){
@@ -341,4 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }else if(path.includes("/gerente.html")){
         dashboardGerente();
     }
+
+    
+    
 });
